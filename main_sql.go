@@ -6,4 +6,5 @@ import (
 
 func main() {
 	fmt.Println("sql")
+	fmt.Println("YA BIBA")
 }
