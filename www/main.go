@@ -14,33 +14,38 @@ type User struct {
 	Hobbies               []string
 }
 
-func (u *User) getAllInfo() string {
-	return fmt.Sprintf("User name is: %s. He is %d and he has money "+
-		"equal: %d", u.Name, u.Age, u.Money)
+func index(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFiles("templates/index.html", "templates/header.html", "templates/footer.html")
+	if err != nil {
+		fmt.Fprintf(w, err.Error())
+	}
+
+	t.ExecuteTemplate(w, "index", nil)
 }
 
-func (u *User) setNewName(newName string) {
-	u.Name = newName
+func create(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFiles("templates/create.html", "templates/header.html", "templates/footer.html")
+	if err != nil {
+		fmt.Fprintf(w, err.Error())
+	}
+
+	t.ExecuteTemplate(w, "create", nil)
 }
 
-func home_page(w http.ResponseWriter, r *http.Request) {
-	serj := User{"Serj", 18, 0, 5.0, 0.5, []string{"Music", "Coding", "Gaming"}}
-	// serj.setNewName("Sergey")
-	// fmt.Fprintf(w, serj.getAllInfo())
-	tmpl, _ := template.ParseFiles("templates/home_page.html")
-	tmpl.Execute(w, serj)
+func save_article(w http.ResponseWriter, r *http.Request) {
+	title := r.FormValue("title")
+	anons := r.FormValue("anons")
+	full_text := r.FormValue("full_text")
 
 }
 
-func contacts_page(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Contacts page")
-}
-
-func handleRequest() {
-	http.HandleFunc("/", home_page)
-	http.HandleFunc("/contacts/", contacts_page)
+func handleFunc() {
+	http.HandleFunc("/", index)
+	http.HandleFunc("/create", create)
+	http.HandleFunc("/save_article", save_article)
 	http.ListenAndServe(":8080", nil)
 }
+
 func main() {
-	handleRequest()
+	handleFunc()
 }
