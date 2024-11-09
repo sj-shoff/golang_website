@@ -1,18 +1,20 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"html/template"
 	"net/http"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
-type User struct {
-	Name                  string
-	Age                   uint16
-	Money                 int16
-	Avg_grades, Happiness float64
-	Hobbies               []string
+type Article struct {
+	Id                     uint16
+	Title, Anons, FullText string
 }
+
+var posts = []Article{}
 
 func index(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("templates/index.html", "templates/header.html", "templates/footer.html")
@@ -20,7 +22,31 @@ func index(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, err.Error())
 	}
 
-	t.ExecuteTemplate(w, "index", nil)
+	db, err := sql.Open("mysql", "root:Aesaj2025@/golang")
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer db.Close()
+
+	res, err := db.Query("select * from golang.articles")
+	if err != nil {
+		panic(err)
+	}
+
+	posts = []Article{}
+	for res.Next() {
+		var post Article
+		err = res.Scan(&post.Id, &post.Title, &post.Anons, &post.FullText)
+		if err != nil {
+			panic(err)
+		}
+
+		posts = append(posts, post)
+	}
+
+	t.ExecuteTemplate(w, "index", posts)
 }
 
 func create(w http.ResponseWriter, r *http.Request) {
@@ -37,6 +63,25 @@ func save_article(w http.ResponseWriter, r *http.Request) {
 	anons := r.FormValue("anons")
 	full_text := r.FormValue("full_text")
 
+	if title == "" || anons == "" || full_text == "" {
+		fmt.Fprintf(w, "Не все данные заполнены")
+	} else {
+
+		db, err := sql.Open("mysql", "root:Aesaj2025@/golang")
+
+		if err != nil {
+			panic(err)
+		}
+		defer db.Close()
+
+		result, err := db.Exec(fmt.Sprintf("insert into golang.articles (title, anons, full_text) values ('%s', '%s', '%s')", title, anons, full_text))
+		if err != nil {
+			panic(err)
+		}
+
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		fmt.Println(result.LastInsertId())
+	}
 }
 
 func handleFunc() {
