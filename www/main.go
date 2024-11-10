@@ -115,13 +115,33 @@ func show_post(w http.ResponseWriter, r *http.Request) {
 	t.ExecuteTemplate(w, "show", showPost)
 
 }
+func contacts(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFiles("templates/contacts.html", "templates/header.html", "templates/footer.html")
+	if err != nil {
+		fmt.Fprintf(w, err.Error())
+	}
 
+	t.ExecuteTemplate(w, "contacts", nil)
+
+}
+
+func more_info(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFiles("templates/more_info.html", "templates/header.html", "templates/footer.html")
+	if err != nil {
+		fmt.Fprintf(w, err.Error())
+	}
+
+	t.ExecuteTemplate(w, "contacts", nil)
+
+}
 func handleFunc() {
 	rtr := mux.NewRouter()
 
 	rtr.HandleFunc("/", index).Methods("GET")
 	rtr.HandleFunc("/create", create).Methods("GET")
 	rtr.HandleFunc("/save_article", save_article).Methods("POST")
+	rtr.HandleFunc("/contacts", contacts).Methods("GET")
+	rtr.HandleFunc("/more_info", more_info).Methods("GET")
 
 	rtr.HandleFunc("/post/{id:[0-9]+}", show_post).Methods("GET")
 
